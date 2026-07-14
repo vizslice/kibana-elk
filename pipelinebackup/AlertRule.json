@@ -1,0 +1,49 @@
+{
+  "trigger": {
+    "schedule": {
+      "interval": "1m"
+    }
+  },
+  "input": {
+    "search": {
+      "request": {
+        "search_type": "query_then_fetch",
+        "indices": [
+          "nginx-demo"
+        ],
+        "rest_total_hits_as_int": true,
+        "body": {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "range": {
+                    "http.response.status_code": {
+                      "gte": 500
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "condition": {
+    "compare": {
+      "ctx.payload.hits.total": {
+        "gte": 50
+      }
+    }
+  },
+  "actions": {
+    "log_error_spike": {
+      "logging": {
+        "level": "info",
+        "text": "DİKKAT: Nginx sunucusunda olağandışı 5xx hatası tespit edildi! Toplam Hata: {{ctx.payload.hits.total}}"
+      }
+    }
+  }
+}
